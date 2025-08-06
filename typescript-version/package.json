@@ -1,0 +1,33 @@
+{
+    "name": "spoticord-typescript",
+    "version": "2.2.6",
+    "type": "module",
+    "description": "Discord bot that plays Spotify music - TypeScript Edition",
+    "main": "dist/main.js",
+    "scripts": {
+        "dev": "tsx watch src/main.ts",
+        "build": "tsc",
+        "start": "node dist/main.js",
+        "lint": "eslint src --ext .ts",
+        "format": "prettier --write src",
+        "clean": "rm -rf dist"
+    },
+    "dependencies": {
+        "discord.js": "^14.14.1",
+        "@discordjs/voice": "^0.16.1",
+        "dotenv": "^16.3.1",
+        "spotify-web-api-node": "^5.0.2"
+    },
+    "devDependencies": {
+        "typescript": "^5.3.3",
+        "tsx": "^4.7.0",
+        "@types/node": "^20.10.6",
+        "eslint": "^8.56.0",
+        "@typescript-eslint/parser": "^6.17.0",
+        "@typescript-eslint/eslint-plugin": "^6.17.0",
+        "prettier": "^3.1.1"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
