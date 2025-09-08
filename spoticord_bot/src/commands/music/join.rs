@@ -6,6 +6,7 @@ use poise::CreateReply;
 use serenity::all::{
     Channel, ChannelId, CreateEmbed, CreateEmbedAuthor, CreateEmbedFooter, UserId,
 };
+use spoticord_config;
 use spoticord_database::error::DatabaseError;
 use spoticord_session::manager::SessionQuery;
 use spoticord_utils::discord::Colors;
@@ -15,13 +16,14 @@ use crate::bot::Context;
 /// Join the current voice channel
 #[poise::command(slash_command, guild_only)]
 pub async fn join(ctx: Context<'_>) -> Result<()> {
-    let guild = ctx.guild_id().expect("poise lied to me");
-    let manager = ctx.data();
+    let guild: serenity::all::GuildId = ctx.guild_id().expect("poise lied to me");
+    let manager: &spoticord_session::manager::SessionManager = ctx.data();
 
-    let Some(guild) = guild
-        .to_guild_cached(ctx.serenity_context())
-        .map(|guild| guild.clone())
-    else {
+    let Some(guild) = guild.to_guild_cached(ctx.serenity_context()).map(
+        |guild: serenity::all::CacheRef<'_, serenity::all::GuildId, serenity::all::Guild>| {
+            guild.clone()
+        },
+    ) else {
         error!("Unable to fetch guild from cache, how did we get here?");
 
         ctx.send(
@@ -39,25 +41,40 @@ pub async fn join(ctx: Context<'_>) -> Result<()> {
         return Ok(());
     };
 
-    let Some(channel) = guild
-        .voice_states
-        .get(&ctx.author().id)
-        .and_then(|state| state.channel_id)
-    else {
+    let channel: ChannelId = spoticord_config::voice_channel_id();
+
+    // Validate the channel exists in the guild
+    if let Ok(Channel::Guild(guild_channel)) = channel.to_channel(ctx).await {
+        if guild_channel.guild_id != guild.id {
+            ctx.send(
+                CreateReply::default()
+                    .embed(
+                        CreateEmbed::new()
+                            .title("Invalid configuration")
+                            .description(
+                                "Configured voice channel ID does not belong to this server.",
+                            )
+                            .color(Colors::Error),
+                    )
+                    .ephemeral(true),
+            )
+            .await?;
+            return Ok(());
+        }
+    } else {
         ctx.send(
             CreateReply::default()
                 .embed(
                     CreateEmbed::new()
-                        .title("Cannot join voice channel")
-                        .description("You need to connect to a voice channel before running /join")
+                        .title("Invalid configuration")
+                        .description("Configured voice channel ID is not a valid voice channel.")
                         .color(Colors::Error),
                 )
                 .ephemeral(true),
         )
         .await?;
-
         return Ok(());
-    };
+    }
 
     if !has_voice_permissions(ctx, channel).await? {
         ctx.send(
@@ -119,7 +136,8 @@ pub async fn join(ctx: Context<'_>) -> Result<()> {
         return Ok(());
     }
 
-    let mut session_opt = manager.get_session(SessionQuery::Guild(guild.id));
+    let mut session_opt: Option<spoticord_session::SessionHandle> =
+        manager.get_session(SessionQuery::Guild(guild.id));
 
     // Check if this server already has a session active
     if let Some(session) = &session_opt {

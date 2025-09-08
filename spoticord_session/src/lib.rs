@@ -24,7 +24,7 @@ use serenity::{
 use songbird::{model::payload::ClientDisconnect, Call, CoreEvent, Event, EventContext};
 use spoticord_player::{Player, PlayerEvent, PlayerHandle};
 use spoticord_utils::discord::Colors;
-use std::{ops::ControlFlow, sync::Arc, time::Duration};
+use std::{ops::ControlFlow, sync::Arc};
 use tokio::{
     sync::{mpsc, oneshot, Mutex},
     task::JoinHandle,
@@ -378,36 +378,11 @@ impl Session {
     }
 
     fn start_timeout(&mut self) {
-        if let Some(tx) = self.timeout_tx.take() {
-            _ = tx.send(());
-        }
-
-        let (tx, rx) = oneshot::channel::<()>();
-        self.timeout_tx = Some(tx);
-
-        let inner_tx = self.commands_inner_tx.clone();
-
-        tokio::spawn(async move {
-            let mut timer =
-                tokio::time::interval(Duration::from_secs(spoticord_config::DISCONNECT_TIME));
-
-            // Ignore immediate tick
-            timer.tick().await;
-
-            tokio::select! {
-                _ = rx => return,
-                _ = timer.tick() => {}
-            };
-
-            // Disconnect through inner communication
-            _ = inner_tx.send(SessionCommand::DisconnectTimedOut).await;
-        });
+        println!("Timeout functionality removed");
     }
 
     fn stop_timeout(&mut self) {
-        if let Some(tx) = self.timeout_tx.take() {
-            _ = tx.send(());
-        }
+        println!("Timeout functionality removed");
     }
 
     async fn reactivate(&mut self, new_owner: UserId) -> Result<()> {

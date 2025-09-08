@@ -844,6 +844,7 @@ dependencies = [
  "chrono",
  "diesel_derives",
  "itoa",
+ "pq-sys",
 ]
 
 [[package]]
@@ -2884,6 +2885,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "pq-sys"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6cc05d7ea95200187117196eee9edd0644424911821aeb28a18ce60ea0b8793"
+dependencies = [
+ "vcpkg",
+]
+
+[[package]]
 name = "prettyplease"
 version = "0.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4110,6 +4120,7 @@ name = "spoticord"
 version = "2.2.6"
 dependencies = [
  "anyhow",
+ "diesel",
  "dotenvy",
  "env_logger",
  "librespot",
@@ -5212,6 +5223,12 @@ dependencies = [
  "itoa",
  "ryu",
 ]
+
+[[package]]
+name = "vcpkg"
+version = "0.2.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 
 [[package]]
 name = "vergen"

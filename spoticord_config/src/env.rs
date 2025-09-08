@@ -15,6 +15,10 @@ pub static SPOTIFY_CLIENT_SECRET: LazyLock<String> = LazyLock::new(|| {
     std::env::var("SPOTIFY_CLIENT_SECRET")
         .expect("missing SPOTIFY_CLIENT_SECRET environment variable")
 });
+pub static DISCORD_VOICE_CHANNEL_ID: LazyLock<String> = LazyLock::new(|| {
+    std::env::var("DISCORD_VOICE_CHANNEL_ID")
+        .expect("missing DISCORD_VOICE_CHANNEL_ID environment variable")
+});
 
 // Locked behind `stats` feature
 pub static KV_URL: LazyLock<String> =

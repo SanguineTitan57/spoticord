@@ -31,7 +31,7 @@ async fn main() {
     dotenvy::dotenv().ok();
 
     // Set up database
-    let database = match Database::connect().await {
+    let database: Database = match Database::connect().await {
         Ok(db) => db,
         Err(why) => {
             error!("Failed to connect to database and perform migrations: {why}");
@@ -40,10 +40,18 @@ async fn main() {
     };
 
     // Set up bot
-    let framework = Framework::builder()
-        .setup(|ctx, ready, framework| Box::pin(bot::setup(ctx, ready, framework, database)))
-        .options(bot::framework_opts())
-        .build();
+    let framework: Framework<spoticord_session::manager::SessionManager, anyhow::Error> =
+        Framework::builder()
+            .setup(
+                |ctx: &serenity::prelude::Context,
+                 ready: &serenity::all::Ready,
+                 framework: &Framework<
+                    spoticord_session::manager::SessionManager,
+                    anyhow::Error,
+                >| Box::pin(bot::setup(ctx, ready, framework, database)),
+            )
+            .options(bot::framework_opts())
+            .build();
 
     let mut client = match ClientBuilder::new(
         spoticord_config::discord_token(),
