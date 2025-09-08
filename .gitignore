@@ -8,3 +8,5 @@
 .vscode
 .vs
 .fleet
+.shuttle*
+Secrets*.toml
