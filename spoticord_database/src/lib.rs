@@ -70,12 +70,17 @@ impl Database {
             let pool_clone = pool.clone();
             task::spawn_blocking(move || -> Result<()> {
                 let mut conn = pool_clone.get().map_err(DatabaseError::from)?;
-                migrations::run_migrations(&mut conn).map_err(DatabaseError::from)?;
+                migrations::run_migrations(&mut conn).map_err(|e| {
+                    eprintln!("Database migration failed: {:?}", e);
+                    DatabaseError::from(e)
+                })?;
                 Ok(())
             })
             .await
-            .map_err(|_| DatabaseError::Diesel(diesel::result::Error::RollbackTransaction))??;
-            // map join error
+            .map_err(|e| {
+                eprintln!("Task join error: {:?}", e);
+                DatabaseError::Diesel(diesel::result::Error::RollbackTransaction)
+            })??;
         }
 
         Ok(Self(Arc::new(pool)))
@@ -226,6 +231,21 @@ impl Database {
                 .filter(user_id.eq(&uid))
                 .first(&mut connection)?;
             Ok(result)
+        })
+        .await
+    }
+
+    pub async fn delete_request(&self, _user_id: impl AsRef<str>) -> Result<usize> {
+        use schema::link_request::dsl::*;
+
+        let pool = self.0.clone();
+        let uid = _user_id.as_ref().to_string();
+        retry_on_prepared_statement_error(move || -> Result<usize> {
+            let mut connection = pool.get().map_err(DatabaseError::from)?;
+            let affected = diesel::delete(link_request)
+                .filter(user_id.eq(&uid))
+                .execute(&mut connection)?;
+            Ok(affected)
         })
         .await
     }
