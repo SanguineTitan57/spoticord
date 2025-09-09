@@ -9,9 +9,6 @@ use spoticord_session::manager::SessionManager;
 
 use crate::commands;
 
-#[cfg(feature = "stats")]
-use spoticord_stats::StatsManager;
-
 pub type Context<'a> = poise::Context<'a, Data, anyhow::Error>;
 pub type FrameworkError<'a> = poise::FrameworkError<'a, Data, anyhow::Error>;
 
@@ -67,14 +64,14 @@ pub async fn setup(
 
     let manager = SessionManager::new(songbird, database);
 
-    #[cfg(feature = "stats")]
-    let stats = StatsManager::new(spoticord_config::kv_url())?;
+    // #[cfg(feature = "stats")]
+    // let stats = StatsManager::new(spoticord_config::kv_url())?;
 
     tokio::spawn(background_loop(
         manager.clone(),
         framework.shard_manager().clone(),
-        #[cfg(feature = "stats")]
-        stats,
+        // #[cfg(feature = "stats")]
+        // stats,
     ));
 
     Ok(manager)
@@ -103,10 +100,8 @@ async fn event_handler(
 async fn background_loop(
     session_manager: SessionManager,
     shard_manager: Arc<ShardManager>,
-    #[cfg(feature = "stats")] mut stats_manager: spoticord_stats::StatsManager,
+    // #[cfg(feature = "stats")] mut stats_manager: spoticord_stats::StatsManager,
 ) {
-    #[cfg(feature = "stats")]
-    use log::error;
 
     loop {
         tokio::select! {
@@ -122,12 +117,6 @@ async fn background_loop(
                             count += 1;
                         }
                     }
-
-                    if let Err(why) = stats_manager.set_active_count(count) {
-                        error!("Failed to update active sessions: {why}");
-                    } else {
-                        debug!("Active session count set to: {count}");
-                    }
                 }
             }
 
@@ -137,8 +126,8 @@ async fn background_loop(
                 session_manager.shutdown_all().await;
                 shard_manager.shutdown_all().await;
 
-                #[cfg(feature = "stats")]
-                stats_manager.set_active_count(0).ok();
+                // #[cfg(feature = "stats")]
+                // stats_manager.set_active_count(0).ok();
 
 
                 break;

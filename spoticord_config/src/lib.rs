@@ -31,9 +31,9 @@ pub fn link_url() -> &'static str {
     &env::LINK_URL
 }
 
-pub fn kv_url() -> &'static str {
-    &env::KV_URL
-}
+// pub fn kv_url() -> &'static str {
+//     &env::KV_URL
+// }
 
 pub fn voice_channel_id() -> ChannelId {
     let id_str = &env::DISCORD_VOICE_CHANNEL_ID;

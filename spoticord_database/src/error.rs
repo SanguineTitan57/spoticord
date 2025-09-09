@@ -6,10 +6,7 @@ pub enum DatabaseError {
     Diesel(diesel::result::Error),
 
     #[error(transparent)]
-    PoolBuild(#[from] diesel_async::pooled_connection::deadpool::BuildError),
-
-    #[error(transparent)]
-    Pool(#[from] diesel_async::pooled_connection::deadpool::PoolError),
+    Pool(#[from] r2d2::Error),
 
     #[error("Failed to refresh token")]
     RefreshTokenFailure,

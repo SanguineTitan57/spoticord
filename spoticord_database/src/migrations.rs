@@ -1,13 +1,12 @@
-use diesel_async::AsyncConnection;
-use diesel_async_migrations::{embed_migrations, EmbeddedMigrations};
+use diesel::pg::PgConnection;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 
-pub async fn run_migrations<C>(connection: &mut C) -> Result<(), diesel::result::Error>
-where
-    C: AsyncConnection<Backend = diesel::pg::Pg> + 'static + Send,
-{
-    let migrations: EmbeddedMigrations = embed_migrations!();
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
-    migrations.run_pending_migrations(connection).await?;
-
+pub fn run_migrations(connection: &mut PgConnection) -> Result<(), diesel::result::Error> {
+    connection
+        .run_pending_migrations(MIGRATIONS)
+        .map(|_| ())
+        .map_err(|_| diesel::result::Error::RollbackTransaction)?; // coarse mapping
     Ok(())
 }
