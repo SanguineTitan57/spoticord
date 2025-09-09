@@ -59,6 +59,7 @@ async fn main(
 
     // Optional
     let guild_id = secrets.get("GUILD_ID");
+    let discord_voice_channel_id = secrets.get("DISCORD_VOICE_CHANNEL_ID");
 
     // --- Set environment variables for spoticord_config ---
     env::set_var("DISCORD_TOKEN", &discord_token);
@@ -70,6 +71,9 @@ async fn main(
     // Set optional environment variables if they exist
     if let Some(guild_id) = guild_id {
         env::set_var("GUILD_ID", guild_id);
+    }
+    if let Some(discord_voice_channel_id) = discord_voice_channel_id {
+        env::set_var("DISCORD_VOICE_CHANNEL_ID", discord_voice_channel_id);
     }
 
     // Set up database
